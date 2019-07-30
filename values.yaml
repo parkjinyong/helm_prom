@@ -347,7 +347,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 50Gi
+              storage: 40Gi
         selector: {}
   service:
     type: NodePort

@@ -16,3 +16,111 @@ alertmanager:
     servicePort: 80
     type: LoadBalancer
 
+serverFiles:
+  alerts:
+  - name: node-custom
+    groups:
+      - name: node-custom-cpu.rules
+        rules:
+        - alert: cpuUsage
+          expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+          for: 1m
+          labels:
+            severity: ciritical
+          annotations:
+            message: Instance {{ $labels.instance }} under heavy load
+        - alert: CpuLoad
+          expr: node_load15 / (count without (cpu, mode) (node_cpu_seconds_total{mode="system"})) > 2
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "CPU load (instance {{ $labels.instance }})"
+            description: "CPU load (15m) is high. VALUE = {{ $value }}"
+      - name: node-custom-memory.rules
+        rules:
+        - alert: OutOfMemory
+          expr: (node_memory_MemFree_bytes + node_memory_Cached_bytes + node_memory_Buffers_bytes) / node_memory_MemTotal_bytes * 100 < 10
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Out of memory (instance {{ $labels.instance }})"
+            description: "Node memory is filling up (< 10% left). VALUE = {{ $value }}"
+        - alert: NodeHasSwap
+          expr: node_memory_SwapTotal_bytes > 0
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Node has swap (instance {{ $labels.instance }})"
+            description: "Node has swap. VALUE = {{ $value }}"
+      - name: node-custom-network.rules
+        rules:
+        - alert: UnusualNetworkThroughputIn
+          expr: sum by (instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Unusual network throughput in (instance {{ $labels.instance }})"
+            description: "Host network interfaces are probably receiving too much data (> 100 MB/s). VALUE = {{ $value }}"
+        - alert: UnusualNetworkThroughputOut
+          expr: sum by (instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Unusual network throughput out (instance {{ $labels.instance }})"
+            description: "Host network interfaces are probably sending too much data (> 100 MB/s). VALUE = {{ $value }}"
+      - name: node-custom-disk.rules
+        rules:
+        - alert: UnusualDiskReadRate
+          expr: sum by (instance) (irate(node_disk_read_bytes_total[2m])) / 1024 / 1024 > 200
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Unusual disk read rate (instance {{ $labels.instance }})"
+            description: "Disk is probably reading too much data (> 50 MB/s). VALUE = {{ $value }}"
+        - alert: UnusualDiskWriteRate
+          expr: sum by (instance) (irate(node_disk_written_bytes_total[2m])) / 1024 / 1024 > 200
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Unusual disk write rate (instance {{ $labels.instance }})"
+            description: "Disk is probably writing too much data (> 50 MB/s). VALUE = {{ $value }}"
+        - alert: OutOfDiskSpace
+          expr: node_filesystem_free_bytes{mountpoint ="/"} / node_filesystem_size_bytes{mountpoint ="/"} * 100 < 10
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Out of disk space (instance {{ $labels.instance }})"
+            description: "Disk is almost full (< 10% left). VALUE = {{ $value }}"
+        - alert: OutOfInodes
+          expr: node_filesystem_files_free{mountpoint ="/"} / node_filesystem_files{mountpoint ="/"} * 100 < 10
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Out of inodes (instance {{ $labels.instance }})"
+            description: "Disk is almost running out of available inodes (< 10% left). VALUE = {{ $value }}"
+        - alert: UnusualDiskReadLatency
+          expr: rate(node_disk_read_time_seconds_total[5m]) / rate(node_disk_reads_completed_total[5m]) > 100
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Unusual disk read latency (instance {{ $labels.instance }})"
+            description: "Disk latency is growing (read operations > 100ms). VALUE = {{ $value }}"
+        - alert: UnusualDiskWriteLatency
+          expr: rate(node_disk_write_time_seconds_total[5m]) / rate(node_disk_writes_completed_total[5m]) > 100
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            message: "Unusual disk write latency (instance {{ $labels.instance }})"
+            description: "Disk latency is growing (write operations > 100ms). VALUE = {{ $value }}"
+

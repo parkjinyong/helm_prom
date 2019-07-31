@@ -16,6 +16,36 @@ alertmanager:
     servicePort: 80
     type: LoadBalancer
 
+alertmanagerFiles:
+  alertmanager.yml:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      receiver: 'default'
+      routes:
+      - match:
+          alertname: Watchdog
+        receiver: 'null'
+    receivers:
+    - name: 'null'
+    - name: 'default'
+      slack_configs:
+      - send_resolved: true
+        api_url: 'https://hooks.slack.com/services/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'
+        username: 'alertmanager'
+        text: |-
+          {{ range .Alerts }}
+            *Alert:* {{ .Annotations.message }}
+            *Description:* {{ .Annotations.description }}{{ .Annotations.runbook_url }}
+            *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
+
 serverFiles:
   alerts:
     groups:

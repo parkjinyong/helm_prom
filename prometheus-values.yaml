@@ -1,0 +1,16 @@
+server:
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    servicePort: 80
+    type: LoadBalancer
+
+alertmanager:
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    servicePort: 80
+    type: LoadBalancer
+

@@ -1,6 +1,6 @@
 server:
   persistentVolume:
-    size: 50Gi
+    size: 15Gi
   service:
     annotations:
       service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http

@@ -18,7 +18,6 @@ alertmanager:
 
 serverFiles:
   alerts:
-  - name: node-custom
     groups:
       - name: node-custom-cpu.rules
         rules:
